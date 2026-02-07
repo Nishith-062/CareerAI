@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import { Toaster } from "react-hot-toast";
+import Verified from "./pages/Verfied";
+import ProtectedRoute from "./providers/ProtectedRoute";
+import CheckingAuth from "./providers/CheckingAuth";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Toaster />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route element={<CheckingAuth />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/verify" element={<Verified />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+
+        <Route
+          path="/demo"
+          element={
+            <div className="flex bg-background items-center justify-center h-screen">
+              <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                Demo in short
+              </h3>
+            </div>
+          }
+        />
+      </Routes>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
