@@ -5,14 +5,22 @@ import { Loader } from "lucide-react";
 const CheckingAuth = () => {
   const { user, isCheckingAuth } = useAuthStore();
 
-    if(isCheckingAuth){
-        return <div className="flex items-center justify-center h-screen"><Loader className="size-10 text-blue-500 animate-spin"/></div>;
-    }
-    if(user){
-        return <Navigate to="/dashboard" replace />;
-    }
+if (isCheckingAuth) {
+  return <div className="flex items-center justify-center h-screen">
+  <Loader className="size-10 text-blue-500 animate-spin"/>
+</div>
 
-  return <Outlet />;
+}
+
+if (user) {
+  if (!user.isVerified) {
+    return <Navigate to="/verify" replace />;
+  }
+  return <Navigate to="/dashboard" replace />;
+}
+
+return <Outlet />;
+
 };
 
 export default CheckingAuth;

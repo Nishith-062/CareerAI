@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./utils/Db.js";
 import authRoutes from "./routes/auth.routes.js";
 import cookieParser from "cookie-parser";
+import resumeRoutes from "./routes/resume.routes.js";
 const app = express();
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/resume", resumeRoutes);
 
 app.listen(3000, () => {
     connectDB();

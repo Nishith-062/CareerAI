@@ -9,10 +9,13 @@ const Verified = () => {
   const [otp, setOtp] = useState("");
   const { verify, user } = useAuthStore();
   const handleVerify = () => {
-    console.log("safasdfaefw");
-    console.log(user);
-    console.log(user?.email, otp);
     if (!user?.email) return;
+    console.log(user.email,otp);
+    try {
+      
+    } catch (error) {
+      
+    }
     verify(user.email, otp);
   };
 

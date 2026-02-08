@@ -6,6 +6,16 @@ interface User {
   email: string;
   fullname: string;
   isVerified: boolean;
+  resume?: string;
+  text?: string;
+  skills?: {
+    name: string;
+    level: string;
+  }[];
+  ats?: {
+    score: number;
+    feedback: string;
+  };
 }
 import axios from "axios";
 
