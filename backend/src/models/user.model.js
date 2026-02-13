@@ -12,26 +12,151 @@ const userSchema = new mongoose.Schema({
   text: {
     type: String, // extracted resume text
   },
+  githubUsername: {
+    type: String,
+    default: "",
+  },
   skills: {
     type: [
       {
-        name: String,
-        level: String,
-      }
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        level: {
+          type: String,
+          enum: ["beginner", "intermediate", "advanced", "expert"],
+          required: true,
+        },
+
+        verificationScore: {
+          type: Number,
+          default: 0.1, // self-declared baseline
+          min: 0,
+          max: 1,
+        },
+
+        verified: {
+          type: Boolean,
+          default: false,
+        },
+
+        verificationSource: {
+          type: String,
+          enum: ["self", "resume", "github"],
+          default: "self",
+        },
+      },
     ],
     default: [],
   },
-  ats:{
-    type:{
-      score:Number,
-      feedback:String,
+  targetRole: {
+    type: String,
+    enum: [
+      "Full Stack Developer",
+      "Frontend Developer",
+      "Backend Developer",
+      "ML Engineer",
+      "Data Scientist",
+      "Data Engineer",
+      "DevOps Engineer",
+      "Cloud Engineer",
+      "Mobile Developer",
+      "Cybersecurity Engineer",
+      "QA Engineer",
+      "Product Manager",
+      "UI/UX Designer",
+    ],
+  },
+  ats: {
+    type: {
+      score: Number,
     },
-    default:{
-      score:0,
-      feedback:"",
-    }
-  }
-  
+    default: {
+      score: 0,
+    },
+  },
+  feedback: {
+    type: {
+      strengths: {
+        type: [String],
+        default: [],
+      },
+      weaknesses: {
+        type: [String],
+        default: [],
+      },
+      improvements: {
+        type: [String],
+        default: [],
+      },
+    },
+    default: {
+      strengths: [],
+      weaknesses: [],
+      improvements: [],
+    },
+  },
+  roadmap: {
+    type: {
+      phases: {
+        type: [
+          {
+            phaseNumber: { type: Number, required: true },
+            title: { type: String, required: true },
+            description: { type: String },
+            estimatedWeeks: { type: Number },
+            milestones: {
+              type: [
+                {
+                  id: { type: Number, required: true },
+                  title: { type: String, required: true },
+                  description: { type: String },
+                  skills: { type: [String], default: [] },
+                  estimatedDays: { type: Number },
+                  resources: {
+                    type: [
+                      {
+                        title: { type: String },
+                        url: { type: String },
+                        type: {
+                          type: String,
+                          enum: [
+                            "course",
+                            "project",
+                            "article",
+                            "video",
+                            "certification",
+                          ],
+                        },
+                      },
+                    ],
+                    default: [],
+                  },
+                  status: {
+                    type: String,
+                    enum: ["completed", "in-progress", "upcoming"],
+                    default: "upcoming",
+                  },
+                },
+              ],
+              default: [],
+            },
+          },
+        ],
+        default: [],
+      },
+      generatedAt: { type: Date },
+      targetRole: { type: String },
+    },
+    default: {
+      phases: [],
+      generatedAt: null,
+      targetRole: null,
+    },
+  },
 });
 
 const User = mongoose.model("User", userSchema);

@@ -7,6 +7,8 @@ import { protectRoute } from "../middleware/auth.middleware.js";
 import { PDFParse } from "pdf-parse";
 import User from "../models/user.model.js";
 import { analyzeResume } from "../utils/analyzeResume.js";
+import verifySkillsWithGithub from "../utils/githubScanner.js";
+import { normalizeSkillName } from "../utils/skillNormalizer.js";
 
 const router = Router();
 
@@ -44,7 +46,7 @@ router.post(
       user.resume = result.secure_url;
       user.text = text.text;
       await user.save();
-      
+
       return res
         .status(200)
         .json({ message: "File uploaded successfully", result, text });
@@ -55,40 +57,94 @@ router.post(
   },
 );
 
-router.post(
-  "/analyze",
-  protectRoute,
-  async (req, res) => {
-    try {
-      const userId = req.user._id;
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      const text = user.text;
-      if (!text) {
-        return res.status(400).json({ message: "No text found" });
-      }
-      const result = await analyzeResume(text);
-      const cleanResult = result
-  .replace(/```json/g, "")
-  .replace(/```/g, "")
-  .trim();
-
-const parsedResult = JSON.parse(cleanResult);
-console.log(parsedResult);
-
-
-      user.ats.score = parsedResult.atsScore;
-      user.ats.feedback = parsedResult.feedback;
-      user.skills = parsedResult.skills;
-      await user.save();
-      return res.status(200).json({ message: "Resume analyzed successfully", result });
-    } catch (error) {
-      console.log(error.message);
-      return res.status(500).json({ message: error.message });
+router.post("/analyze", protectRoute, async (req, res) => {
+  console.log("Analyze route hit");
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  },
-);
+    const text = user.text;
+    if (!text) {
+      return res.status(400).json({ message: "No text found" });
+    }
+    const result = await analyzeResume(text);
+    // console.log(result);
+
+    if (typeof result !== "string") {
+      throw new Error("Invalid response format from AI service");
+    }
+
+    let githubSkillsMap = new Map();
+    if (user.githubUsername) {
+      try {
+        const verificationResults = await verifySkillsWithGithub(
+          user.githubUsername,
+        );
+        const parsedGithubSkills = JSON.parse(verificationResults);
+        Object.entries(parsedGithubSkills).forEach(([skill, score]) => {
+          githubSkillsMap.set(normalizeSkillName(skill), score);
+        });
+      } catch (error) {
+        console.error("Error fetching GitHub skills:", error);
+      }
+    }
+
+    const cleanResult = result
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+    // console.log(cleanResult);
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(cleanResult);
+    } catch (parseError) {
+      console.error("Initial JSON parse failed:", parseError.message);
+
+      // Attempt to extract JSON if it's wrapped in text
+      const jsonMatch = cleanResult.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          parsedResult = JSON.parse(jsonMatch[0]);
+        } catch (innerError) {
+          throw new Error("Failed to extract valid JSON from response");
+        }
+      } else {
+        throw new Error("No JSON object found in response");
+      }
+    }
+    // console.log(parsedResult);
+
+    user.ats.score = parsedResult.atsScore;
+    // user.ats.feedback = parsedResult.feedback;
+    user.feedback.strengths = parsedResult.feedback.strengths;
+    user.feedback.weaknesses = parsedResult.feedback.weaknesses;
+    user.feedback.improvements = parsedResult.feedback.improvements;
+
+    // Normalize and verify skills
+    user.skills = parsedResult.skills.map((skill) => {
+      const normalizedName = normalizeSkillName(skill.name);
+      const githubScore = githubSkillsMap.get(normalizedName);
+
+      return {
+        name: normalizedName,
+        level: skill.level,
+        verificationScore: githubScore !== undefined ? githubScore : 0.1,
+        verified: githubScore !== undefined,
+        verificationSource: githubScore !== undefined ? "github" : "resume",
+      };
+    });
+    await user.save();
+    const userObject = user.toObject();
+    delete userObject.password;
+    return res
+      .status(200)
+      .json({ message: "Resume analyzed successfully", user:userObject });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ message: error.message });
+  }
+});
 
 export default router;

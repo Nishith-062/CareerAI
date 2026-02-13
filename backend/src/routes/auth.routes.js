@@ -91,4 +91,30 @@ router.get('/checkAuth',protectRoute, (req, res) => {
     }
 });
 
+
+router.put("/updateUser", protectRoute, async(req, res) => {
+    try {
+        const {fullname, password,targetRole} = req.body;
+        const user = await User.findById(req.user._id);
+        if(!user){
+            return res.status(404).json({message:"User not found"});
+        }
+        if(fullname){
+            user.fullname = fullname;
+        }
+        if(password){
+            user.password = password;
+        }
+        if(targetRole){
+            user.targetRole = targetRole;
+        }
+        await user.save();
+        return res.status(200).json({message:"User updated successfully"});
+    } catch (error) {
+        console.log(error);
+        
+        return res.status(500).json({message:error.message});
+    }
+});
+
 export default router;

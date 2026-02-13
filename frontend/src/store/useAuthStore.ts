@@ -14,7 +14,12 @@ interface User {
   }[];
   ats?: {
     score: number;
-    feedback: string;
+  };
+  targetRole?: string;
+  feedback?: {
+    strengths: string[];
+    weaknesses: string[];
+    improvements: string[];
   };
 }
 import axios from "axios";
@@ -38,6 +43,11 @@ interface AuthStore {
     password: string,
   ) => Promise<void>;
   logout: () => void;
+  updateUser: (
+    targetRole: string,
+    name: string,
+    password: string,
+  ) => Promise<void>;
 }
 
 const useAuthStore = create<AuthStore>((set, get) => ({
@@ -115,6 +125,28 @@ const useAuthStore = create<AuthStore>((set, get) => ({
   },
   logout: () => {
     set({ user: null });
+  },
+  updateUser: async (targetRole: string, name: string, password: string) => {
+    try {
+      const res = await axiosInstance.put("/auth/updateUser", {
+        targetRole,
+        name,
+        password,
+      });
+      set((state) => {
+        if (!state.user) return {};
+        return {
+          user: {
+            ...state.user,
+            targetRole: targetRole,
+            fullname: name,
+          },
+        };
+      });
+      toast.success(res.data.message);
+    } catch (error) {
+      toast.error("Failed to update profile");
+    }
   },
 }));
 

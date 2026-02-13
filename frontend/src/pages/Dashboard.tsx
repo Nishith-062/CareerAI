@@ -428,9 +428,22 @@ const Dashboard = () => {
                     <Sparkles className="h-4 w-4 text-primary" />
                     AI Feedback
                   </h4>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {user.ats.feedback}
-                  </p>
+                  <div className="text-muted-foreground text-sm leading-relaxed">
+                    {user.feedback?.improvements &&
+                    user.feedback.improvements.length > 0 ? (
+                      <ul className="list-disc list-inside space-y-1">
+                        {user.feedback.improvements
+                          .slice(0, 3)
+                          .map((item, index) => (
+                            <li key={index} className="text-muted-foreground">
+                              {item}
+                            </li>
+                          ))}
+                      </ul>
+                    ) : (
+                      "No feedback available yet."
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>

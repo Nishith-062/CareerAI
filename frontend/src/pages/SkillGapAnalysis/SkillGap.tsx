@@ -25,84 +25,85 @@ import {
   Briefcase,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { StatCard } from "./components/StatCard";
+import { axiosInstance } from "@/lib/axios";
 
 // Mock data for a target role - in a real app this would come from the backend or user selection
-const TARGET_ROLE = {
-  title: "Senior Full Stack Developer",
-  requiredSkills: [
-    { name: "React Js", level: "Expert" },
-    { name: "MERN Stack (Node.js, Express, MongoDB)", level: "Advanced" },
-    { name: "javascript", level: "Advanced" },
-    { name: "AWS", level: "Intermediate" },
-    { name: "Docker", level: "Intermediate" },
-    { name: "GraphQL", level: "Intermediate" },
-    { name: "System Design", level: "Advanced" },
-    { name: "CI/CD", level: "Intermediate" },
-  ],
-};
+interface SkillAnalysis {
+  name: string;
+  level: number;
+  userLevel: number;
+  gap: number;
+  status: string;
+}
+
+interface GapAnalysisState {
+  overallMatch: number;
+  targetRole: string;
+  missingSkills: SkillAnalysis[];
+  gapSkills: SkillAnalysis[];
+  masteredSkills: SkillAnalysis[];
+  analysis: SkillAnalysis[];
+}
 
 const SkillGap = () => {
   const { user } = useAuthStore();
-  const [analyzing, setAnalyzing] = useState(false);
-
-  // Simulate analysis loading state
-  useEffect(() => {
-    setAnalyzing(true);
-    const timer = setTimeout(() => setAnalyzing(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const getLevelScore = (level: string) => {
-    switch (level) {
-      case "Beginner":
-        return 25;
-      case "Intermediate":
-        return 50;
-      case "Advanced":
-        return 75;
-      case "Expert":
-        return 100;
-      default:
-        return 0;
-    }
-  };
-
-  console.log(user?.skills);
-  
-
-  // Logic to calculate gaps
-  const userSkillsMap = new Map(
-    user?.skills?.map((s) => [s.name.toLowerCase(), s.level]) || [],
-  );
-
-  const analysis = TARGET_ROLE.requiredSkills.map((reqSkill) => {
-    const userLevel = userSkillsMap.get(reqSkill.name.toLowerCase());
-    const userScore = userLevel ? getLevelScore(userLevel) : 0;
-    const reqScore = getLevelScore(reqSkill.level);
-
-    let status: "missing" | "gap" | "mastered" = "missing";
-    if (userLevel) {
-      status = userScore >= reqScore ? "mastered" : "gap";
-    }
-
-    return {
-      ...reqSkill,
-      userLevel: userLevel || "None",
-      status,
-      gapSeverity:
-        status === "missing" ? 100 : Math.max(0, reqScore - userScore),
-    };
+  const [analyzing, setAnalyzing] = useState(true);
+  const [gapAnalysis, setGapAnalysis] = useState<GapAnalysisState>({
+    overallMatch: 0,
+    targetRole: "",
+    missingSkills: [],
+    gapSkills: [],
+    masteredSkills: [],
+    analysis: [],
   });
 
-  const missingSkills = analysis.filter((a) => a.status === "missing");
-  const gapSkills = analysis.filter((a) => a.status === "gap");
-  const masteredSkills = analysis.filter((a) => a.status === "mastered");
+  const { overallMatch, targetRole, missingSkills, gapSkills, masteredSkills } =
+    gapAnalysis;
 
-  const overallMatch = Math.round(
-    ((masteredSkills.length + gapSkills.length * 0.5) /
-      TARGET_ROLE.requiredSkills.length) *
-      100,
-  );
+  // Simulate analysis loading state
+
+  useEffect(() => {
+    const fetchGapAnalysis = async () => {
+      try {
+        const response = await axiosInstance.get("/skillgap");
+        setGapAnalysis(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching gap analysis:", error);
+      } finally {
+        setAnalyzing(false);
+      }
+    };
+    fetchGapAnalysis();
+  }, []);
+
+  const stats = [
+    {
+      title: "Role Match",
+      value: `${overallMatch}%`,
+      description: "Overall match with target role",
+      icon: <Target className="h-5 w-5" />,
+      iconWrapperClassName: "bg-primary/10 text-primary",
+      footer: <Progress value={overallMatch} className="mt-4 h-2" />,
+    },
+    {
+      title: "Missing Skills",
+      value: missingSkills.length,
+      description: "Critical skills required for this role",
+      valueClassName: "text-red-500",
+      icon: <AlertTriangle className="h-5 w-5" />,
+      iconWrapperClassName: "bg-red-500/10 text-red-500",
+    },
+    {
+      title: "To Improve",
+      value: gapSkills.length,
+      description: "Skills needing proficiency boost",
+      valueClassName: "text-amber-500",
+      icon: <TrendingUp className="h-5 w-5" />,
+      iconWrapperClassName: "bg-amber-500/10 text-amber-500",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -133,75 +134,25 @@ const SkillGap = () => {
               Target Role:
             </span>
             <Badge variant="secondary" className="font-semibold text-primary">
-              {TARGET_ROLE.title}
+              {targetRole || "Select a Role"}
             </Badge>
           </div>
         </div>
 
         {/* Overview Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Role Match
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end justify-between">
-                <div className="text-4xl font-bold text-foreground">
-                  {overallMatch}%
-                </div>
-                <div
-                  className={`h-8 w-8 rounded-full flex items-center justify-center bg-primary/10 ${overallMatch > 70 ? "text-green-500" : overallMatch > 40 ? "text-amber-500" : "text-red-500"}`}
-                >
-                  <Target className="h-5 w-5" />
-                </div>
-              </div>
-              <Progress value={overallMatch} className="mt-4 h-2" />
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Missing Skills
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end justify-between">
-                <div className="text-4xl font-bold text-red-500">
-                  {missingSkills.length}
-                </div>
-                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-red-500/10 text-red-500">
-                  <AlertTriangle className="h-5 w-5" />
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-4">
-                Critical skills required for this role
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                To Improve
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end justify-between">
-                <div className="text-4xl font-bold text-amber-500">
-                  {gapSkills.length}
-                </div>
-                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-amber-500/10 text-amber-500">
-                  <TrendingUp className="h-5 w-5" />
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-4">
-                Skills needing proficiency boost
-              </p>
-            </CardContent>
-          </Card>
+          {stats.map((stat, index) => (
+            <StatCard
+              key={index}
+              title={stat.title}
+              value={stat.value}
+              description={stat.description}
+              icon={stat.icon}
+              iconWrapperClassName={stat.iconWrapperClassName}
+              valueClassName={stat.valueClassName}
+              footer={stat.footer}
+            />
+          ))}
         </div>
 
         {/* Detailed Analysis */}
@@ -226,44 +177,45 @@ const SkillGap = () => {
                 ) : (
                   <div className="divide-y divide-border/50">
                     {/* High Priority: Missing Skills */}
-                    {missingSkills.map((skill, i) => (
-                      <div
-                        key={`missing-${i}`}
-                        className="p-4 hover:bg-muted/30 transition-colors group"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-4">
-                            <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 mt-1">
-                              <Lock className="h-5 w-5 text-red-500" />
+                    {missingSkills.length > 0 &&
+                      missingSkills.map((skill, i) => (
+                        <div
+                          key={`missing-${i}`}
+                          className="p-4 hover:bg-muted/30 transition-colors group"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-4">
+                              <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 mt-1">
+                                <Lock className="h-5 w-5 text-red-500" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                                  {skill.name}
+                                  <Badge
+                                    variant="destructive"
+                                    className="text-[10px] px-1.5 py-0 h-5"
+                                  >
+                                    Missing
+                                  </Badge>
+                                </h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Required Level:{" "}
+                                  <span className="font-medium text-foreground">
+                                    {skill.level}
+                                  </span>
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                                {skill.name}
-                                <Badge
-                                  variant="destructive"
-                                  className="text-[10px] px-1.5 py-0 h-5"
-                                >
-                                  Missing
-                                </Badge>
-                              </h3>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Required Level:{" "}
-                                <span className="font-medium text-foreground">
-                                  {skill.level}
-                                </span>
-                              </p>
-                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-2 group-hover:border-primary/50 group-hover:text-primary transition-all"
+                            >
+                              Learn <ArrowRight className="h-3 w-3" />
+                            </Button>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-2 group-hover:border-primary/50 group-hover:text-primary transition-all"
-                          >
-                            Learn <ArrowRight className="h-3 w-3" />
-                          </Button>
                         </div>
-                      </div>
-                    ))}
+                      ))}
 
                     {/* Medium Priority: Skill Gaps */}
                     {gapSkills.map((skill, i) => (

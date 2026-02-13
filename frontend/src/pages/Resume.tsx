@@ -2,7 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { axiosInstance } from "@/lib/axios";
 import useAuthStore from "@/store/useAuthStore";
-import { AlertCircle, CheckCircle, FileText, Loader2, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Loader2,
+  Upload,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -82,7 +88,9 @@ const Resume = () => {
         {/* Upload Section */}
         <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-fit">
           <div className="flex flex-col space-y-1.5 p-6">
-            <h3 className="font-semibold leading-none tracking-tight">Upload Resume</h3>
+            <h3 className="font-semibold leading-none tracking-tight">
+              Upload Resume
+            </h3>
             <p className="text-sm text-muted-foreground">
               Upload your resume (PDF) to get started with the analysis.
             </p>
@@ -95,9 +103,10 @@ const Resume = () => {
               className={`
                 border-2 border-dashed rounded-xl p-10 text-center cursor-pointer 
                 transition-all duration-200 ease-in-out
-                ${file 
-                  ? "border-primary/50 bg-primary/5" 
-                  : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
+                ${
+                  file
+                    ? "border-primary/50 bg-primary/5"
+                    : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
                 }
               `}
             >
@@ -109,7 +118,9 @@ const Resume = () => {
                 onChange={handleFileChange}
               />
               <div className="flex flex-col items-center gap-2">
-                <div className={`p-3 rounded-full ${file ? "bg-primary/10" : "bg-muted"}`}>
+                <div
+                  className={`p-3 rounded-full ${file ? "bg-primary/10" : "bg-muted"}`}
+                >
                   {file ? (
                     <FileText className="h-6 w-6 text-primary" />
                   ) : (
@@ -131,9 +142,9 @@ const Resume = () => {
               </div>
             </div>
 
-            <Button 
-              onClick={handleFileUpload} 
-              disabled={!file || isUploading} 
+            <Button
+              onClick={handleFileUpload}
+              disabled={!file || isUploading}
               className="w-full"
             >
               {isUploading ? (
@@ -145,11 +156,13 @@ const Resume = () => {
                 "Upload Resume"
               )}
             </Button>
-            
+
             {(user?.resume || file) && (
               <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground bg-muted/50 rounded-lg">
                 <CheckCircle className="h-4 w-4 text-green-500" />
-                <span>Current: {user?.resume ? "Resume on file" : "File selected"}</span>
+                <span>
+                  Current: {user?.resume ? "Resume on file" : "File selected"}
+                </span>
               </div>
             )}
           </div>
@@ -160,17 +173,23 @@ const Resume = () => {
           <div className="flex flex-col space-y-1.5 p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h3 className="font-semibold leading-none tracking-tight">Resume Analysis</h3>
+                <h3 className="font-semibold leading-none tracking-tight">
+                  Resume Analysis
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Get detailed insights and ATS optimization tips
                 </p>
               </div>
               {user?.ats?.score && (
-                 <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  Number(user.ats.score) >= 70 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                  Number(user.ats.score) >= 50 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                  "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                }`}>
+                <div
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    Number(user.ats.score) >= 70
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : Number(user.ats.score) >= 50
+                        ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  }`}
+                >
                   Score: {user.ats.score}/100
                 </div>
               )}
@@ -186,16 +205,17 @@ const Resume = () => {
                   <div className="space-y-1">
                     <p className="text-sm font-medium">No Analysis Yet</p>
                     <p className="text-xs text-muted-foreground w-64">
-                      Upload your resume and click analyze to see your ATS score and feedback.
+                      Upload your resume and click analyze to see your ATS score
+                      and feedback.
                     </p>
                   </div>
                 </div>
               )}
 
-              <Button 
-                onClick={handleAnalyze} 
+              <Button
+                onClick={handleAnalyze}
                 className="w-full"
-                disabled={isAnalyzing || !user?.resume && !file} // Require resume uploaded or selected? Usually need uploaded.
+                disabled={isAnalyzing || (!user?.resume && !file)} // Require resume uploaded or selected? Usually need uploaded.
                 variant={user?.ats ? "outline" : "default"}
               >
                 {isAnalyzing ? (
@@ -203,8 +223,10 @@ const Resume = () => {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Analyzing...
                   </>
+                ) : user?.ats ? (
+                  "Re-analyze Resume"
                 ) : (
-                  user?.ats ? "Re-analyze Resume" : "Analyze Resume"
+                  "Analyze Resume"
                 )}
               </Button>
 
@@ -212,30 +234,79 @@ const Resume = () => {
                 <div className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-5">
                   {/* Score Visualization */}
                   <div className="grid grid-cols-2 gap-4">
-                     <div className="rounded-lg border p-4 bg-muted/30 flex flex-col items-center justify-center text-center gap-1">
-                        <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">ATS Score</span>
-                        <span className="text-3xl font-bold">{user.ats.score}</span>
-                     </div>
-                     <div className="rounded-lg border p-4 bg-muted/30 flex flex-col items-center justify-center text-center gap-1">
-                        <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Status</span>
-                        <span className={`text-sm font-medium px-2 py-0.5 rounded-full ${
-                          Number(user.ats.score) >= 70 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                          Number(user.ats.score) >= 50 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                          "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        }`}>
-                          {Number(user.ats.score) >= 70 ? "Good" : Number(user.ats.score) >= 50 ? "Average" : "Needs Work"}
-                        </span>
-                     </div>
+                    <div className="rounded-lg border p-4 bg-muted/30 flex flex-col items-center justify-center text-center gap-1">
+                      <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">
+                        ATS Score
+                      </span>
+                      <span className="text-3xl font-bold">
+                        {user.ats.score}
+                      </span>
+                    </div>
+                    <div className="rounded-lg border p-4 bg-muted/30 flex flex-col items-center justify-center text-center gap-1">
+                      <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">
+                        Status
+                      </span>
+                      <span
+                        className={`text-sm font-medium px-2 py-0.5 rounded-full ${
+                          Number(user.ats.score) >= 70
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : Number(user.ats.score) >= 50
+                              ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        }`}
+                      >
+                        {Number(user.ats.score) >= 70
+                          ? "Good"
+                          : Number(user.ats.score) >= 50
+                            ? "Average"
+                            : "Needs Work"}
+                      </span>
+                    </div>
                   </div>
 
-                  {user?.ats?.feedback && (
-                    <div className="space-y-2">
-                       <h4 className="text-sm font-medium flex items-center gap-2">
-                        <FileText className="h-4 w-4" /> Feedback
-                       </h4>
-                      <div className="rounded-lg border bg-muted/30 p-4 text-sm text-start leading-relaxed animate-in zoom-in-95 duration-300">
-                        {user.ats.feedback}
-                      </div>
+                  {user?.feedback && (
+                    <div className="space-y-4 animate-in slide-in-from-bottom-5 fade-in-0 duration-500">
+                      {user.feedback.strengths &&
+                        user.feedback.strengths.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium flex items-center gap-2 text-green-600 dark:text-green-400">
+                              <CheckCircle className="h-4 w-4" /> Strengths
+                            </h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground p-3 bg-green-50/50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/20">
+                              {user.feedback.strengths.map((item, i) => (
+                                <li key={i}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                      {user.feedback.weaknesses &&
+                        user.feedback.weaknesses.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium flex items-center gap-2 text-red-600 dark:text-red-400">
+                              <AlertCircle className="h-4 w-4" /> Weaknesses
+                            </h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground p-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/20">
+                              {user.feedback.weaknesses.map((item, i) => (
+                                <li key={i}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                      {user.feedback.improvements &&
+                        user.feedback.improvements.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                              <FileText className="h-4 w-4" /> Improvements
+                            </h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-900/20">
+                              {user.feedback.improvements.map((item, i) => (
+                                <li key={i}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                     </div>
                   )}
 

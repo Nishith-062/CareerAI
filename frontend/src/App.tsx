@@ -12,7 +12,7 @@ import Resume from "./pages/Resume";
 import Opportunities from "./pages/Opportunities";
 import Roadmap from "./pages/Roadmap";
 import Settings from "./pages/Settings";
-import SkillGap from "./pages/SkillGap";
+import SkillGap from "./pages/SkillGapAnalysis/SkillGap";
 
 function App() {
   return (

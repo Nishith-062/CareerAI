@@ -1,10 +1,44 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Select,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import useAuthStore from "@/store/useAuthStore";
 import { User, Bell, Lock, Mail, Globe } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 const Settings = () => {
+  const { user, updateUser } = useAuthStore();
+  const targetRoles = [
+    "Full Stack Developer",
+    "Frontend Developer",
+    "Backend Developer",
+    "ML Engineer",
+    "Data Scientist",
+    "Data Engineer",
+    "DevOps Engineer",
+    "Cloud Engineer",
+    "Mobile Developer",
+    "Cybersecurity Engineer",
+    "QA Engineer",
+    "Product Manager",
+    "UI/UX Designer",
+  ];
+  const [targetRole, setTargetRole] = useState(user?.targetRole || "");
+  const [name, setName] = useState(user?.fullname || "");
+  const [password, setPassword] = useState("");
+  const handleUpdate = async () => {
+    await updateUser(targetRole, name, password);
+  };
+
   return (
     <div className="p-6 bg-background min-h-screen">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -32,14 +66,15 @@ const Settings = () => {
 
             <Separator />
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 ">
               <div className="grid gap-2">
-                <Label htmlFor="firstName">First name</Label>
-                <Input id="firstName" placeholder="Max" defaultValue="Nishi" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="lastName">Last name</Label>
-                <Input id="lastName" placeholder="Robinson" defaultValue="" />
+                <Label htmlFor="firstName">Full name</Label>
+                <Input
+                  id="firstName"
+                  placeholder="Max"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
             </div>
 
@@ -49,67 +84,68 @@ const Settings = () => {
                 id="email"
                 type="email"
                 placeholder="m@example.com"
-                defaultValue="nishi@example.com"
+                disabled
+                value={user?.email}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Input id="bio" placeholder="Tell us a little about yourself" />
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="********"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
 
             <div className="flex justify-end">
-              <Button>Save Changes</Button>
+              <Button onClick={handleUpdate}>Save Changes</Button>
             </div>
           </section>
 
-          {/* Notifications Section */}
+          {/* target role */}
           <section className="bg-card border border-border rounded-xl p-6 space-y-6">
             <div className="flex items-center gap-4">
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bell className="h-5 w-5 text-primary" />
+                <User className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold">Notifications</h2>
+                <h2 className="text-xl font-semibold">Target Role</h2>
                 <p className="text-sm text-muted-foreground">
-                  Configure how you receive alerts.
+                  Update your target role.
                 </p>
               </div>
             </div>
 
             <Separator />
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-0.5">
-                    <Label className="text-base">Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive daily digests of new opportunities.
-                    </p>
-                  </div>
-                </div>
-                {/* Simplified toggle visual since Switch might not be available yet, using a button or checkbox styled input would be better but keeping simple for now */}
-                <input
-                  type="checkbox"
-                  className="h-5 w-5 accent-primary"
-                  defaultChecked
-                />
+            <div className="grid gap-4 ">
+              <div className="grid gap-2">
+                <Label htmlFor="targetRole">Target Role</Label>
+                <Select
+                  value={targetRole}
+                  onValueChange={(value) => setTargetRole(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="select target role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {targetRoles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-0.5">
-                    <Label className="text-base">Browser Push</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive real-time notifications on your desktop.
-                    </p>
-                  </div>
-                </div>
-                <input type="checkbox" className="h-5 w-5 accent-primary" />
-              </div>
+            <div className="flex justify-end">
+              <Button onClick={handleUpdate}>Save Changes</Button>
             </div>
           </section>
 
@@ -130,12 +166,6 @@ const Settings = () => {
             <Separator />
 
             <div className="grid gap-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal"
-              >
-                Change Password
-              </Button>
               <Button
                 variant="outline"
                 className="w-full justify-start text-left font-normal text-destructive hover:text-destructive"
