@@ -13,15 +13,35 @@ import Opportunities from "./pages/Opportunities";
 import Roadmap from "./pages/Roadmap";
 import Settings from "./pages/Settings";
 import SkillGap from "./pages/SkillGapAnalysis/SkillGap";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminRoute from "./providers/AdminRoute";
+import { useAdminAuthStore } from "./store/useAdminAuthStore";
+import { useEffect } from "react";
 
 function App() {
+  const { checkAdminAuth } = useAdminAuthStore();
+
+  useEffect(() => {
+    checkAdminAuth();
+  }, [checkAdminAuth]);
+
   return (
     <>
       <Toaster />
       <Routes>
         {/* Public */}
         <Route path="/" element={<Landing />} />
-        <Route path="/demo" element={<div className="flex items-center justify-center h-screen"><h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">Demo in short</h3></div>} />
+        <Route
+          path="/demo"
+          element={
+            <div className="flex items-center justify-center h-screen">
+              <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                Demo in short
+              </h3>
+            </div>
+          }
+        />
 
         {/* Auth-only public pages */}
         <Route element={<CheckingAuth />}>
@@ -31,6 +51,17 @@ function App() {
 
         {/* Unverified users only */}
         <Route path="/verify" element={<Verified />} />
+
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
 
         {/* Protected app */}
         <Route element={<ProtectedRoute />}>
@@ -47,6 +78,5 @@ function App() {
     </>
   );
 }
-
 
 export default App;

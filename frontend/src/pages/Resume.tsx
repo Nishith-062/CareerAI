@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { axiosInstance } from "@/lib/axios";
 import useAuthStore from "@/store/useAuthStore";
 import {
@@ -8,6 +10,10 @@ import {
   FileText,
   Loader2,
   Upload,
+  ShieldCheck,
+  TrendingUp,
+  Lightbulb,
+  Star,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -82,261 +88,358 @@ const Resume = () => {
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 70)
+      return {
+        bg: "bg-green-100 dark:bg-green-900/30",
+        text: "text-green-700 dark:text-green-400",
+        ring: "ring-green-500/30",
+      };
+    if (score >= 50)
+      return {
+        bg: "bg-yellow-100 dark:bg-yellow-900/30",
+        text: "text-yellow-700 dark:text-yellow-400",
+        ring: "ring-yellow-500/30",
+      };
+    return {
+      bg: "bg-red-100 dark:bg-red-900/30",
+      text: "text-red-700 dark:text-red-400",
+      ring: "ring-red-500/30",
+    };
+  };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 70) return "Good";
+    if (score >= 50) return "Average";
+    return "Needs Work";
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-6 gap-6">
-      <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-2">
-        {/* Upload Section */}
-        <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-fit">
-          <div className="flex flex-col space-y-1.5 p-6">
-            <h3 className="font-semibold leading-none tracking-tight">
-              Upload Resume
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Upload your resume (PDF) to get started with the analysis.
-            </p>
-          </div>
-          <div className="p-6 pt-0 space-y-4">
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              className={`
-                border-2 border-dashed rounded-xl p-10 text-center cursor-pointer 
-                transition-all duration-200 ease-in-out
-                ${
-                  file
-                    ? "border-primary/50 bg-primary/5"
-                    : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
-                }
-              `}
-            >
-              <Input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept=".pdf"
-                onChange={handleFileChange}
-              />
-              <div className="flex flex-col items-center gap-2">
-                <div
-                  className={`p-3 rounded-full ${file ? "bg-primary/10" : "bg-muted"}`}
-                >
-                  {file ? (
-                    <FileText className="h-6 w-6 text-primary" />
-                  ) : (
-                    <Upload className="h-6 w-6 text-muted-foreground" />
-                  )}
+    <div className="min-h-screen bg-background">
+      <div className=" mx-auto px-6 py-8 space-y-6">
+        {/* Page Header */}
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Resume Intelligence
+          </h1>
+          <p className="text-muted-foreground">
+            Upload, analyze, and optimize your resume with AI-powered insights.
+          </p>
+        </div>
+
+        {/* Upload & Analyze Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Upload Card */}
+          <div className="rounded-xl border bg-card shadow-sm">
+            <div className="p-6 pb-4">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Upload className="h-4 w-4 text-primary" />
                 </div>
-                <div className="space-y-1">
+                <div>
+                  <h3 className="font-semibold text-base leading-none">
+                    Upload Resume
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PDF format, max 5MB
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 pb-6 space-y-4">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className={`
+                  border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
+                  transition-all duration-200 ease-in-out
+                  ${
+                    file
+                      ? "border-primary/50 bg-primary/5"
+                      : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
+                  }
+                `}
+              >
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                />
+                <div className="flex flex-col items-center gap-2">
+                  <div
+                    className={`p-3 rounded-full ${file ? "bg-primary/10" : "bg-muted"}`}
+                  >
+                    {file ? (
+                      <FileText className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
                   <p className="text-sm font-medium">
                     {file ? file.name : "Click to upload or drag and drop"}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {file ? (
-                      <span className="text-primary">Ready to upload</span>
+                      <span className="text-primary font-medium">
+                        Ready to upload
+                      </span>
                     ) : (
-                      "PDF files only (max 5MB)"
+                      "PDF files only"
                     )}
                   </p>
                 </div>
               </div>
-            </div>
 
-            <Button
-              onClick={handleFileUpload}
-              disabled={!file || isUploading}
-              className="w-full"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                "Upload Resume"
-              )}
-            </Button>
+              <Button
+                onClick={handleFileUpload}
+                disabled={!file || isUploading}
+                className="w-full"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  "Upload Resume"
+                )}
+              </Button>
 
-            {(user?.resume || file) && (
-              <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground bg-muted/50 rounded-lg">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span>
-                  Current: {user?.resume ? "Resume on file" : "File selected"}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Analysis Section */}
-        <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-fit">
-          <div className="flex flex-col space-y-1.5 p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h3 className="font-semibold leading-none tracking-tight">
-                  Resume Analysis
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Get detailed insights and ATS optimization tips
-                </p>
-              </div>
-              {user?.ats?.score && (
-                <div
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    Number(user.ats.score) >= 70
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : Number(user.ats.score) >= 50
-                        ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  }`}
-                >
-                  Score: {user.ats.score}/100
+              {(user?.resume || file) && (
+                <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground bg-muted/50 rounded-lg">
+                  <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                  <span>
+                    {user?.resume ? "Resume on file" : "File selected"}
+                  </span>
                 </div>
               )}
             </div>
           </div>
-          <div className="p-6 pt-0">
-            <div className="flex flex-col gap-6">
-              {!user?.ats && (
-                <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
-                  <div className="p-3 rounded-full bg-muted">
-                    <AlertCircle className="h-6 w-6 text-muted-foreground" />
+
+          {/* Analyze Card */}
+          <div className="rounded-xl border bg-card shadow-sm">
+            <div className="p-6 pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4 text-blue-500" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">No Analysis Yet</p>
-                    <p className="text-xs text-muted-foreground w-64">
-                      Upload your resume and click analyze to see your ATS score
-                      and feedback.
+                  <div>
+                    <h3 className="font-semibold text-base leading-none">
+                      ATS Analysis
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Score & optimization tips
                     </p>
                   </div>
                 </div>
+                {user?.ats?.score != null && user.ats.score > 0 && (
+                  <div
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${getScoreColor(user.ats.score).bg} ${getScoreColor(user.ats.score).text}`}
+                  >
+                    {user.ats.score}/100
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="px-6 pb-6 space-y-5">
+              {!user?.ats || user.ats.score === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center space-y-2">
+                  <div className="p-3 rounded-full bg-muted">
+                    <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium">No Analysis Yet</p>
+                  <p className="text-xs text-muted-foreground max-w-[220px]">
+                    Upload your resume first, then click analyze to see your ATS
+                    score.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Score & Status */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border p-4 bg-muted/30 text-center space-y-1">
+                      <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-widest">
+                        ATS Score
+                      </span>
+                      <p className="text-3xl font-bold">{user.ats.score}</p>
+                    </div>
+                    <div className="rounded-lg border p-4 bg-muted/30 flex flex-col items-center justify-center text-center gap-2">
+                      <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-widest">
+                        Status
+                      </span>
+                      <span
+                        className={`text-xs font-semibold px-2.5 py-1 rounded-full ${getScoreColor(user.ats.score).bg} ${getScoreColor(user.ats.score).text}`}
+                      >
+                        {getScoreLabel(user.ats.score)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Compatibility</span>
+                      <span className="font-medium">{user.ats.score}%</span>
+                    </div>
+                    <Progress value={user.ats.score} className="h-2" />
+                  </div>
+                </>
               )}
 
               <Button
                 onClick={handleAnalyze}
                 className="w-full"
-                disabled={isAnalyzing || (!user?.resume && !file)} // Require resume uploaded or selected? Usually need uploaded.
-                variant={user?.ats ? "outline" : "default"}
+                disabled={isAnalyzing || !user?.resume}
+                variant={
+                  user?.ats && user.ats.score > 0 ? "outline" : "default"
+                }
               >
                 {isAnalyzing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Analyzing...
                   </>
-                ) : user?.ats ? (
+                ) : user?.ats && user.ats.score > 0 ? (
                   "Re-analyze Resume"
                 ) : (
                   "Analyze Resume"
                 )}
               </Button>
-
-              {user?.ats && (
-                <div className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-5">
-                  {/* Score Visualization */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-lg border p-4 bg-muted/30 flex flex-col items-center justify-center text-center gap-1">
-                      <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">
-                        ATS Score
-                      </span>
-                      <span className="text-3xl font-bold">
-                        {user.ats.score}
-                      </span>
-                    </div>
-                    <div className="rounded-lg border p-4 bg-muted/30 flex flex-col items-center justify-center text-center gap-1">
-                      <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">
-                        Status
-                      </span>
-                      <span
-                        className={`text-sm font-medium px-2 py-0.5 rounded-full ${
-                          Number(user.ats.score) >= 70
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            : Number(user.ats.score) >= 50
-                              ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        }`}
-                      >
-                        {Number(user.ats.score) >= 70
-                          ? "Good"
-                          : Number(user.ats.score) >= 50
-                            ? "Average"
-                            : "Needs Work"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {user?.feedback && (
-                    <div className="space-y-4 animate-in slide-in-from-bottom-5 fade-in-0 duration-500">
-                      {user.feedback.strengths &&
-                        user.feedback.strengths.length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-medium flex items-center gap-2 text-green-600 dark:text-green-400">
-                              <CheckCircle className="h-4 w-4" /> Strengths
-                            </h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground p-3 bg-green-50/50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/20">
-                              {user.feedback.strengths.map((item, i) => (
-                                <li key={i}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                      {user.feedback.weaknesses &&
-                        user.feedback.weaknesses.length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-medium flex items-center gap-2 text-red-600 dark:text-red-400">
-                              <AlertCircle className="h-4 w-4" /> Weaknesses
-                            </h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground p-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/20">
-                              {user.feedback.weaknesses.map((item, i) => (
-                                <li key={i}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                      {user.feedback.improvements &&
-                        user.feedback.improvements.length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-medium flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                              <FileText className="h-4 w-4" /> Improvements
-                            </h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-900/20">
-                              {user.feedback.improvements.map((item, i) => (
-                                <li key={i}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                    </div>
-                  )}
-
-                  {user?.skills && user.skills.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-medium flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" /> Detected Skills
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {user.skills.map((skill, i) => (
-                          <div
-                            key={`${skill.name}-${i}`}
-                            className="inline-flex items-center rounded-md border bg-secondary/50 px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-secondary"
-                          >
-                            {skill.name}
-                            {skill.level && (
-                              <span className="ml-1 opacity-50 font-normal border-l pl-1 border-foreground/20">
-                                {skill.level}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>
+
+        {/* Feedback Section — Full Width Below */}
+        {user?.feedback && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Strengths */}
+            {user.feedback.strengths && user.feedback.strengths.length > 0 && (
+              <div className="rounded-xl border bg-card shadow-sm p-5 space-y-3">
+                <h4 className="text-sm font-semibold flex items-center gap-2 text-green-600 dark:text-green-400">
+                  <Star className="h-4 w-4" />
+                  Strengths
+                </h4>
+                <ul className="space-y-2">
+                  {user.feedback.strengths.map((item, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-sm text-muted-foreground"
+                    >
+                      <CheckCircle className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Weaknesses */}
+            {user.feedback.weaknesses &&
+              user.feedback.weaknesses.length > 0 && (
+                <div className="rounded-xl border bg-card shadow-sm p-5 space-y-3">
+                  <h4 className="text-sm font-semibold flex items-center gap-2 text-red-600 dark:text-red-400">
+                    <AlertCircle className="h-4 w-4" />
+                    Weaknesses
+                  </h4>
+                  <ul className="space-y-2">
+                    {user.feedback.weaknesses.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-sm text-muted-foreground"
+                      >
+                        <AlertCircle className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+            {/* Improvements */}
+            {user.feedback.improvements &&
+              user.feedback.improvements.length > 0 && (
+                <div className="rounded-xl border bg-card shadow-sm p-5 space-y-3">
+                  <h4 className="text-sm font-semibold flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                    <Lightbulb className="h-4 w-4" />
+                    Improvements
+                  </h4>
+                  <ul className="space-y-2">
+                    {user.feedback.improvements.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-sm text-muted-foreground"
+                      >
+                        <TrendingUp className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+          </div>
+        )}
+
+        {/* Detected Skills Section */}
+        {user?.skills && user.skills.length > 0 && (
+          <div className="rounded-xl border bg-card shadow-sm">
+            <div className="p-6 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                  <ShieldCheck className="h-4 w-4 text-purple-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-base leading-none">
+                    Detected Skills
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {user.skills.length} skills found ·{" "}
+                    {user.skills.filter((s) => s.verified).length} verified
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 pb-6">
+              <div className="flex flex-wrap gap-2">
+                {user.skills.map((skill, i) => (
+                  <div
+                    key={`${skill.name}-${i}`}
+                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors
+                      ${
+                        skill.verified
+                          ? "bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400"
+                          : "bg-muted/50 border-border text-foreground"
+                      }`}
+                    title={
+                      skill.verificationScore
+                        ? `Confidence: ${Math.round(skill.verificationScore * 100)}% · Source: ${skill.verificationSource}`
+                        : undefined
+                    }
+                  >
+                    {skill.verified && (
+                      <CheckCircle className="w-3 h-3 shrink-0" />
+                    )}
+                    <span>{skill.name}</span>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] px-1.5 py-0 h-4 ml-0.5 font-normal capitalize"
+                    >
+                      {skill.level}
+                    </Badge>
+                    {skill.verificationScore > 0 && (
+                      <span className="text-[10px] opacity-50 ml-0.5">
+                        {Math.round(skill.verificationScore * 100)}%
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

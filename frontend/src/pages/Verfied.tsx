@@ -4,19 +4,21 @@ import { ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import useAuthStore from "@/store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 const Verified = () => {
   const [otp, setOtp] = useState("");
-  const { verify, user } = useAuthStore();
-  const handleVerify = () => {
+  const { verify, user, resendOtp } = useAuthStore();
+  const navigate = useNavigate();
+  const handleVerify = async () => {
     if (!user?.email) return;
-    console.log(user.email,otp);
+    console.log(user.email, otp);
     try {
-      
+      await verify(user.email, otp);
+      navigate("/dashboard");
     } catch (error) {
-      
+      console.log(error);
     }
-    verify(user.email, otp);
   };
 
   return (
@@ -53,7 +55,10 @@ const Verified = () => {
         <div className="text-center text-sm">
           <p className="text-muted-foreground">
             Didn't receive the code?{" "}
-            <button className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 rounded">
+            <button
+              onClick={() => user?.email && resendOtp(user.email)}
+              className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 rounded"
+            >
               Click to resend
             </button>
           </p>

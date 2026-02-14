@@ -36,22 +36,31 @@ import { Link } from "react-router-dom";
 const Dashboard = () => {
   const { user } = useAuthStore();
 
-  // Convert skills to radar chart data
+  // Convert skills to radar chart data -- updated to use verification score
   const skillsData =
-    user?.skills?.map((skill) => ({
-      skill: skill.name,
-      level:
-        skill.level === "Beginner"
-          ? 30
-          : skill.level === "Intermediate"
-            ? 60
-            : skill.level === "Advanced"
-              ? 85
-              : skill.level === "Expert"
-                ? 100
-                : 50,
-      fullMark: 100,
-    })) || [];
+    user?.skills?.map((skill) => {
+      // Determine base level score
+      let baseScore = 50; // Default
+      if (skill.level === "beginner") baseScore = 30;
+      if (skill.level === "intermediate") baseScore = 60;
+      if (skill.level === "advanced") baseScore = 85;
+      if (skill.level === "expert") baseScore = 100;
+
+      // Use verification score (0-1) scaled to 0-100 if available and reasonable
+      // Or blend them? Let's take the max to be generous or weighted average.
+      // Given the prompt "use the skilllverficationScore", let's prioritize it if verified.
+      const verificationScore = (skill.verificationScore || 0) ;
+
+      // Use the higher of the two to show potential
+    const finalScore = Math.round(
+      baseScore * verificationScore
+    );
+      return {
+        skill: skill.name,
+        level: finalScore,
+        fullMark: 100,
+      };
+    }) || [];
 
   // Get initials for avatar
   const getInitials = (name: string) => {
@@ -340,16 +349,39 @@ const Dashboard = () => {
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border/30"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center relative">
                           <BookOpen className="h-4 w-4 text-primary" />
+                          {skill.verified && (
+                            <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-[2px] border border-background">
+                              <CheckCircle2 className="h-2 w-2 text-white" />
+                            </div>
+                          )}
                         </div>
-                        <span className="text-foreground font-medium">
-                          {skill.name}
-                        </span>
+                        <div>
+                          <span className="text-foreground font-medium block">
+                            {skill.name}
+                          </span>
+                          {skill.verified && (
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              Verified via {skill.verificationSource}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <Badge variant={getSkillBadgeVariant(skill.level)}>
-                        {skill.level}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge variant={getSkillBadgeVariant(skill.level)}>
+                          {skill.level}
+                        </Badge>
+                        {skill.verificationScore > 0 && (
+                          <span
+                            className="text-[10px] text-muted-foreground"
+                            title="AI Verification Confidence"
+                          >
+                            {Math.round((skill.verificationScore || 0) * 100)}%
+                            Conf.
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

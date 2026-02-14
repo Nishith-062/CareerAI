@@ -8,18 +8,46 @@ interface User {
   isVerified: boolean;
   resume?: string;
   text?: string;
-  skills?: {
+  githubUsername?: string;
+  targetRole?: string;
+  skills: {
     name: string;
-    level: string;
+    level: "beginner" | "intermediate" | "advanced" | "expert";
+    verificationScore: number;
+    verified: boolean;
+    verificationSource: "self" | "resume" | "github";
+    _id?: string;
   }[];
-  ats?: {
+  ats: {
     score: number;
   };
-  targetRole?: string;
-  feedback?: {
+  feedback: {
     strengths: string[];
     weaknesses: string[];
     improvements: string[];
+  };
+  roadmap?: {
+    phases: {
+      phaseNumber: number;
+      title: string;
+      description: string;
+      estimatedWeeks: number;
+      milestones: {
+        id: number;
+        title: string;
+        description: string;
+        skills: string[];
+        estimatedDays: number;
+        resources: {
+          title: string;
+          url: string;
+          type: "course" | "project" | "article" | "video" | "certification";
+        }[];
+        status: "completed" | "in-progress" | "upcoming";
+      }[];
+    }[];
+    generatedAt: string;
+    targetRole: string;
   };
 }
 import axios from "axios";
@@ -36,7 +64,9 @@ interface AuthStore {
   verify: (email: string, otp: string) => Promise<void>;
   login: (email: string, password: string, navigate?: any) => Promise<void>;
   isCheckingAuth: boolean;
+  isLoading: boolean;
   setIsCheckingAuth: (isCheckingAuth: boolean) => void;
+  setIsLoading: (isLoading: boolean) => void;
   register: (
     fullname: string,
     email: string,
@@ -47,14 +77,18 @@ interface AuthStore {
     targetRole: string,
     name: string,
     password: string,
+    githubUsername: string,
   ) => Promise<void>;
+  resendOtp: (email: string) => Promise<void>;
 }
 
 const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   setUser: (user: any) => set({ user }),
   isCheckingAuth: false,
+  isLoading: false,
   setIsCheckingAuth: (isCheckingAuth: boolean) => set({ isCheckingAuth }),
+  setIsLoading: (isLoading: boolean) => set({ isLoading }),
   checkAuth: async (navigate?: any) => {
     try {
       set({ isCheckingAuth: true });
@@ -79,7 +113,10 @@ const useAuthStore = create<AuthStore>((set, get) => ({
         email,
         otp,
       });
-      set({ user: response.data });
+      set({ user: response.data.user });
+      toast.success(response.data.message);
+
+
     } catch (error: any) {
       toast.error(error.response.data.message);
       console.error("Verify failed:", error);
@@ -88,6 +125,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
   },
   login: async (email: string, password: string, navigate?: any) => {
     try {
+      set({ isLoading: true });
       const response = await axiosInstance.post("/auth/login", {
         email,
         password,
@@ -106,10 +144,13 @@ const useAuthStore = create<AuthStore>((set, get) => ({
       }
       console.error("Login failed:", error);
       throw error;
+    } finally {
+      set({ isLoading: false });
     }
   },
   register: async (fullname: string, email: string, password: string) => {
     try {
+      set({ isLoading: true });
       const response = await axiosInstance.post("/auth/register", {
         fullname,
         email,
@@ -121,17 +162,41 @@ const useAuthStore = create<AuthStore>((set, get) => ({
     } catch (error) {
       console.error("Register failed:", error);
       throw error;
+    } finally {
+      set({ isLoading: false });
     }
   },
   logout: () => {
     set({ user: null });
   },
-  updateUser: async (targetRole: string, name: string, password: string) => {
+  resendOtp: async (email: string) => {
     try {
+      set({ isLoading: true });
+      const response = await axiosInstance.post("/auth/resend-otp", {
+        email,
+      });
+      toast.success(response.data.message);
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+      console.error("Resend OTP failed:", error);
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  updateUser: async (
+    targetRole: string,
+    name: string,
+    password: string,
+    githubUsername: string,
+  ) => {
+    try {
+      set({ isLoading: true });
       const res = await axiosInstance.put("/auth/updateUser", {
         targetRole,
         name,
         password,
+        githubUsername,
       });
       set((state) => {
         if (!state.user) return {};
@@ -140,12 +205,16 @@ const useAuthStore = create<AuthStore>((set, get) => ({
             ...state.user,
             targetRole: targetRole,
             fullname: name,
+            githubUsername: githubUsername,
           },
         };
       });
+      set({user:res.data.user})
       toast.success(res.data.message);
     } catch (error) {
       toast.error("Failed to update profile");
+    } finally {
+      set({ isLoading: false });
     }
   },
 }));

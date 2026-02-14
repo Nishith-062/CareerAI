@@ -206,13 +206,7 @@ const SkillGap = () => {
                                 </p>
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-2 group-hover:border-primary/50 group-hover:text-primary transition-all"
-                            >
-                              Learn <ArrowRight className="h-3 w-3" />
-                            </Button>
+
                           </div>
                         </div>
                       ))}
