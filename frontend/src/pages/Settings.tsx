@@ -16,7 +16,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 const Settings = () => {
-  const { user, updateUser,isLoading } = useAuthStore();
+  const { user, updateUser, isLoading } = useAuthStore();
   const targetRoles = [
     "Full Stack Developer",
     "Frontend Developer",
@@ -34,10 +34,12 @@ const Settings = () => {
   ];
   const [targetRole, setTargetRole] = useState(user?.targetRole || "");
   const [name, setName] = useState(user?.fullname || "");
-  const [githubUsername, setGithubUsername] = useState(user?.githubUsername || "");
+  const [githubUsername, setGithubUsername] = useState(
+    user?.githubUsername || "",
+  );
   const [password, setPassword] = useState("");
   const handleUpdate = async () => {
-    await updateUser(targetRole, name, password,githubUsername);
+    await updateUser(targetRole, name, password, githubUsername);
   };
 
   return (
@@ -112,16 +114,16 @@ const Settings = () => {
               />
             </div>
 
-<Button
-  className="ml-auto cursor-pointer bg-primary text-primary-foreground"
-  disabled={isLoading}
-  onClick={handleUpdate}
->
-  <span className="flex items-center gap-2">
-    {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-    <span>Save Changes</span>
-  </span>
-</Button>
+            <Button
+              className="ml-auto cursor-pointer bg-primary text-primary-foreground"
+              disabled={isLoading}
+              onClick={handleUpdate}
+            >
+              <span className="flex items-center gap-2">
+                {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                <span>Save Changes</span>
+              </span>
+            </Button>
           </section>
 
           {/* target role */}
@@ -164,7 +166,12 @@ const Settings = () => {
             </div>
 
             <div className="flex justify-end">
-              <Button onClick={handleUpdate}>Save Changes</Button>
+              <Button onClick={handleUpdate} disabled={isLoading}>
+                <span className="flex items-center gap-2">
+                  {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  <span>Save Changes</span>
+                </span>
+              </Button>
             </div>
           </section>
 

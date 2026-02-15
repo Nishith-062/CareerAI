@@ -23,7 +23,7 @@ const Resume = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user } = useAuthStore();
+  const { user,setUser } = useAuthStore();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0] || null;
@@ -63,9 +63,10 @@ const Resume = () => {
     formData.append("resume", file);
 
     try {
-      await axiosInstance.post("/resume/upload", formData, {
+      const response=await axiosInstance.post("/resume/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      setUser(response.data.user);
       toast.success("Resume uploaded successfully");
     } catch (error) {
       console.error("Upload failed", error);
@@ -78,7 +79,8 @@ const Resume = () => {
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     try {
-      await axiosInstance.post("/resume/analyze");
+      const response=await axiosInstance.post("/resume/analyze");
+      setUser(response.data.user);
       toast.success("Resume analyzed successfully");
     } catch (error) {
       console.error("Analyze failed", error);

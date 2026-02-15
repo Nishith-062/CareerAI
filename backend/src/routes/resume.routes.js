@@ -46,10 +46,12 @@ router.post(
       user.resume = result.secure_url;
       user.text = text.text;
       await user.save();
+      const userObject = user.toObject();
+      delete userObject.password;
 
       return res
         .status(200)
-        .json({ message: "File uploaded successfully", result, text });
+        .json({ message: "File uploaded successfully", user: userObject });
     } catch (error) {
       console.log(error.message);
       return res.status(500).json({ message: error.message });
@@ -102,7 +104,6 @@ router.post("/analyze", protectRoute, async (req, res) => {
     } catch (parseError) {
       console.error("Initial JSON parse failed:", parseError.message);
 
-      // Attempt to extract JSON if it's wrapped in text
       const jsonMatch = cleanResult.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         try {
@@ -172,7 +173,7 @@ router.get("/verify", protectRoute, async (req, res) => {
     });
 
     // Update each existing skill with GitHub verification data
-    user.skills = user.skills.map((skill) => {
+      user.skills = user.skills.map((skill) => {
       const normalizedName = normalizeSkillName(skill.name);
       const githubScore = githubSkillsMap.get(normalizedName);
 
@@ -180,7 +181,7 @@ router.get("/verify", protectRoute, async (req, res) => {
         name: normalizedName,
         level: skill.level,
         verificationScore:
-          githubScore !== undefined ? githubScore : skill.verificationScore,
+          githubScore !== undefined ? githubScore : 0.1,
         verified: githubScore !== undefined ? true : skill.verified,
         verificationSource:
           githubScore !== undefined ? "github" : skill.verificationSource,

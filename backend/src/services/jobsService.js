@@ -17,31 +17,31 @@ const JOB_SOURCES = {
   ],
   japan: [
     { name: "JSearch Japan", function: "fetchFromJSearch", country: "JP" },
-    { name: "Adzuna Japan", function: "fetchFromAdzuna", country: "JP" }
+    { name: "Adzuna Japan", function: "fetchFromAdzuna", country: "JP" },
   ],
   us: [
     { name: "JSearch US", function: "fetchFromJSearch", country: "US" },
-    { name: "Adzuna US", function: "fetchFromAdzuna", country: "US" }
+    { name: "Adzuna US", function: "fetchFromAdzuna", country: "US" },
   ],
   uk: [
     { name: "JSearch UK", function: "fetchFromJSearch", country: "UK" },
-    { name: "Adzuna UK", function: "fetchFromAdzuna", country: "UK" }
+    { name: "Adzuna UK", function: "fetchFromAdzuna", country: "UK" },
   ],
   canada: [
     { name: "JSearch Canada", function: "fetchFromJSearch", country: "CA" },
-    { name: "Adzuna Canada", function: "fetchFromAdzuna", country: "CA" }
+    { name: "Adzuna Canada", function: "fetchFromAdzuna", country: "CA" },
   ],
   australia: [
     { name: "JSearch Australia", function: "fetchFromJSearch", country: "AU" },
-    { name: "Adzuna Australia", function: "fetchFromAdzuna", country: "AU" }
+    { name: "Adzuna Australia", function: "fetchFromAdzuna", country: "AU" },
   ],
   germany: [
     { name: "JSearch Germany", function: "fetchFromJSearch", country: "DE" },
-    { name: "Adzuna Germany", function: "fetchFromAdzuna", country: "DE" }
+    { name: "Adzuna Germany", function: "fetchFromAdzuna", country: "DE" },
   ],
   france: [
     { name: "JSearch France", function: "fetchFromJSearch", country: "FR" },
-    { name: "Adzuna France", function: "fetchFromAdzuna", country: "FR" }
+    { name: "Adzuna France", function: "fetchFromAdzuna", country: "FR" },
   ],
   global: [
     { name: "JSearch Global", function: "fetchFromJSearch", country: "US" },
@@ -311,6 +311,7 @@ function buildSearchQueries(skills = [], domain = "") {
 
 async function fetchFromJSearch(query, country = "IN") {
   if (!process.env.RAPID_API_KEY) return [];
+  console.log(process.env.RAPID_API_KEY);
 
   try {
     const response = await axios.get("https://jsearch.p.rapidapi.com/search", {
@@ -343,6 +344,7 @@ async function fetchFromJSearch(query, country = "IN") {
       }))
       .slice(0, 25);
   } catch (err) {
+    console.log(err);
     console.error("JSearch error:", err.message);
     return [];
   }
@@ -503,8 +505,8 @@ async function fetchJobsDomainGeo(
 ) {
   // 1. Build smart queries from domain + skills
   const queries = buildSearchQueries(skills, domain);
-//   console.log("[JobsService] Search queries:", queries);
-console.log(geography);
+  //   console.log("[JobsService] Search queries:", queries);
+  console.log(geography);
 
   // 2. Determine Sources
   let sources = [];
@@ -513,35 +515,27 @@ console.log(geography);
   if (geoLower === "india" || geoLower === "in") {
     sources = JOB_SOURCES.india;
     console.log(JOB_SOURCES.india);
-  }else if(geoLower === "united kingdom" || geoLower === "uk") {
+  } else if (geoLower === "united kingdom" || geoLower === "uk") {
     sources = JOB_SOURCES.unitedkingdom;
     console.log(JOB_SOURCES.unitedkingdom);
-  }
-  else if(geoLower === "united states" || geoLower === "us") {
+  } else if (geoLower === "united states" || geoLower === "us") {
     sources = JOB_SOURCES.unitedstates;
     console.log(JOB_SOURCES.unitedstates);
-  }
-  else if(geoLower === "australia" || geoLower === "au") {
+  } else if (geoLower === "australia" || geoLower === "au") {
     sources = JOB_SOURCES.australia;
     console.log(JOB_SOURCES.australia);
-  }
-  else if(geoLower === "canada" || geoLower === "ca") {
+  } else if (geoLower === "canada" || geoLower === "ca") {
     sources = JOB_SOURCES.canada;
     console.log(JOB_SOURCES.canada);
-  }
-  else if(geoLower === "germany" || geoLower === "de") {
+  } else if (geoLower === "germany" || geoLower === "de") {
     sources = JOB_SOURCES.germany;
     console.log(JOB_SOURCES.germany);
-  }
-  else if(geoLower === "france" || geoLower === "fr") {
+  } else if (geoLower === "france" || geoLower === "fr") {
     sources = JOB_SOURCES.france;
     console.log(JOB_SOURCES.france);
-  }
-
-  else if (geoLower === "japan" || geoLower === "jp") {
+  } else if (geoLower === "japan" || geoLower === "jp") {
     sources = JOB_SOURCES.japan;
     console.log(JOB_SOURCES.japan);
-    
   } else {
     sources = JOB_SOURCES.global;
   }

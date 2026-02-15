@@ -13,6 +13,7 @@ import Opportunities from "./pages/Opportunities";
 import Roadmap from "./pages/Roadmap";
 import Settings from "./pages/Settings";
 import SkillGap from "./pages/SkillGapAnalysis/SkillGap";
+import VoiceAgent from "./pages/VoiceAgent";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./providers/AdminRoute";
@@ -72,6 +73,7 @@ function App() {
             <Route path="/roadmap" element={<Roadmap />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/skill-gap" element={<SkillGap />} />
+            <Route path="/voice-agent" element={<VoiceAgent />} />
           </Route>
         </Route>
       </Routes>

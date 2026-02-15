@@ -127,6 +127,8 @@ router.put("/updateUser", protectRoute, async (req, res) => {
     }
     if (targetRole) {
       user.targetRole = targetRole;
+      console.log(targetRole);
+      
     }
     if (githubUsername) {
       user.githubUsername = githubUsername;

@@ -9,6 +9,7 @@ import skillgapRoutes from "./routes/skillgap.routes.js";
 import oppurtunityRoutes from "./routes/oppurtunities.route.js";
 import roadmapRoutes from "./routes/roadmap.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import livekitRoutes from "./routes/livekit.routes.js";
 const app = express();
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/oppurtunites", oppurtunityRoutes);
 app.use("/api/roadmap", roadmapRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/livekit", livekitRoutes);
 
 app.listen(3000, () => {
   connectDB();

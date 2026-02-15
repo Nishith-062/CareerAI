@@ -209,6 +209,8 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           },
         };
       });
+      console.log(res.data.user);
+      
       set({user:res.data.user})
       toast.success(res.data.message);
     } catch (error) {

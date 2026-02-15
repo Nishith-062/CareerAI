@@ -23,10 +23,19 @@ import {
   Brain,
   Layers,
   Briefcase,
+  Loader2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { StatCard } from "./components/StatCard";
 import { axiosInstance } from "@/lib/axios";
+import {
+  SelectContent,
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import toast from "react-hot-toast";
 
 // Mock data for a target role - in a real app this would come from the backend or user selection
 interface SkillAnalysis {
@@ -47,7 +56,7 @@ interface GapAnalysisState {
 }
 
 const SkillGap = () => {
-  const { user } = useAuthStore();
+  const { user, updateUser, isLoading } = useAuthStore();
   const [analyzing, setAnalyzing] = useState(true);
   const [gapAnalysis, setGapAnalysis] = useState<GapAnalysisState>({
     overallMatch: 0,
@@ -62,6 +71,11 @@ const SkillGap = () => {
     gapAnalysis;
 
   // Simulate analysis loading state
+  const [selectedRole, setSelectedRole] = useState(
+    user?.targetRole || "choose the target role",
+  );
+
+  console.log(user);
 
   useEffect(() => {
     const fetchGapAnalysis = async () => {
@@ -105,6 +119,46 @@ const SkillGap = () => {
     },
   ];
 
+  const ROLES = [
+    "Full Stack Developer",
+    "Frontend Developer",
+    "Backend Developer",
+    "ML Engineer",
+    "Data Scientist",
+    "Data Engineer",
+    "DevOps Engineer",
+    "Cloud Engineer",
+    "Mobile Developer",
+    "Cybersecurity Engineer",
+    "QA Engineer",
+    "Product Manager",
+    "UI/UX Designer",
+  ];
+
+  const [loading,setLoading]=useState(false)
+
+  const handleAnalyze = async () => {
+    try {
+      setLoading(true)
+      await updateUser(
+        selectedRole,
+        user?.fullname || "",
+        "",
+        user?.githubUsername || "",
+      );
+      const response = await axiosInstance.get("/skillgap");
+      setGapAnalysis(response.data);
+      toast.success("Skill gap analysis completed");
+    } catch (error) {
+      toast.error("Failed to analyze skill gap");
+    }finally{
+      setLoading(false)
+    }
+
+    // navigate('/skill-gap')
+    // window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background Pattern similar to Dashboard */}
@@ -133,14 +187,41 @@ const SkillGap = () => {
             <span className="text-sm font-medium text-muted-foreground">
               Target Role:
             </span>
-            <Badge variant="secondary" className="font-semibold text-primary">
+            {/* <Badge variant="secondary" className="font-semibold text-primary">
               {targetRole || "Select a Role"}
-            </Badge>
+            </Badge> */}
+            <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Target Role" />
+              </SelectTrigger>
+              <SelectContent>
+                {ROLES.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {role}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={handleAnalyze}>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Analyze"
+              )}
+            </Button>
           </div>
         </div>
 
-        {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        {loading ? (
+          <div className="h-screen flex items-center justify-center">
+            <Loader2 className="h-10 w-10 animate-spin" />
+          </div>
+        )
+      :
+      (
+        <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.map((stat, index) => (
             <StatCard
               key={index}
@@ -206,7 +287,6 @@ const SkillGap = () => {
                                 </p>
                               </div>
                             </div>
-
                           </div>
                         </div>
                       ))}
@@ -289,9 +369,11 @@ const SkillGap = () => {
                     </p>
                   </div>
                 </div>
-                <Button className="whitespace-nowrap shadow-lg shadow-primary/20">
-                  Generate Roadmap
-                </Button>
+                <Link to="/roadmap">
+                  <Button className="whitespace-nowrap shadow-lg shadow-primary/20">
+                    Generate Roadmap
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
@@ -348,6 +430,13 @@ const SkillGap = () => {
             </Card>
           </div>
         </div>
+        
+        </>
+      )
+      }
+
+        {/* Overview Stats */}
+
       </div>
     </div>
   );
